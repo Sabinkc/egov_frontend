@@ -1,4 +1,5 @@
-import 'package:egov_project/screens/login_screen.dart';
+import 'package:egov_project/features/auth/presentation/screens/login_screen.dart';
+import 'package:egov_project/features/dashboard/presentation/dashboard_screen.dart';
 import 'package:flutter/material.dart';
 
 class RegScreen extends StatelessWidget {
@@ -97,23 +98,31 @@ class RegScreen extends StatelessWidget {
                       ),
                       const SizedBox(height: 50),
                       Center(
-                        child: Container(
-                          height: 55,
-                          width: 300,
-                          decoration: BoxDecoration(
-                            borderRadius: BorderRadius.circular(30),
-                            gradient: const LinearGradient(colors: [
-                              Color(0xffB81736),
-                              Color(0xff281537),
-                            ]),
-                          ),
-                          child: const Center(
-                            child: Text(
-                              'SIGN UP',
-                              style: TextStyle(
-                                  fontWeight: FontWeight.bold,
-                                  fontSize: 20,
-                                  color: Colors.white),
+                        child: GestureDetector(
+                          onTap: () {
+                            Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                    builder: (context) => DashboardScreen()));
+                          },
+                          child: Container(
+                            height: 55,
+                            width: 300,
+                            decoration: BoxDecoration(
+                              borderRadius: BorderRadius.circular(30),
+                              gradient: const LinearGradient(colors: [
+                                Color(0xffB81736),
+                                Color(0xff281537),
+                              ]),
+                            ),
+                            child: const Center(
+                              child: Text(
+                                'SIGN UP',
+                                style: TextStyle(
+                                    fontWeight: FontWeight.bold,
+                                    fontSize: 20,
+                                    color: Colors.white),
+                              ),
                             ),
                           ),
                         ),

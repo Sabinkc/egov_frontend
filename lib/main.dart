@@ -1,4 +1,4 @@
-import 'package:egov_project/screens/login_screen.dart';
+import 'package:egov_project/features/auth/presentation/screens/login_screen.dart';
 import 'package:flutter/material.dart';
 
 void main(List<String> args) {
