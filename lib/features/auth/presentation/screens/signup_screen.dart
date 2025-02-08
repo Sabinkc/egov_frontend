@@ -1,9 +1,154 @@
 import 'package:egov_project/features/auth/presentation/screens/login_screen.dart';
-import 'package:egov_project/features/dashboard/presentation/dashboard_screen.dart';
 import 'package:flutter/material.dart';
+import 'package:egov_project/features/auth/data/api_service.dart';
+import 'package:egov_project/features/dashboard/presentation/dashboard_screen.dart';
+import 'package:logger/logger.dart';
+// Import the logger
 
-class RegScreen extends StatelessWidget {
+class RegScreen extends StatefulWidget {
   const RegScreen({super.key});
+
+  @override
+  State<RegScreen> createState() => _RegScreenState();
+}
+
+class _RegScreenState extends State<RegScreen> {
+  final TextEditingController _fullNameController = TextEditingController();
+  final TextEditingController _emailController = TextEditingController();
+  final TextEditingController _passwordController = TextEditingController();
+
+  bool _isLoading = false;
+  String? _fullNameError;
+  String? _emailError;
+  String? _passwordError;
+  bool _isObscure = true; // For toggling password visibility
+
+  // Logger for debugging
+  final Logger _logger = Logger();
+
+  // Validation methods
+  String? _validateFullName(String? value) {
+    if (value == null || value.isEmpty) {
+      return "Full Name is required";
+    }
+    return null;
+  }
+
+  String? _validateEmail(String? value) {
+    if (value == null || value.isEmpty) {
+      return "Email is required";
+    }
+    final emailRegExp =
+        RegExp(r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$');
+    if (!emailRegExp.hasMatch(value)) {
+      return "Enter a valid email";
+    }
+    return null;
+  }
+
+  String? _validatePassword(String? value) {
+    if (value == null || value.isEmpty) {
+      return "Password is required";
+    }
+    if (value.length < 6) {
+      return "Password must be at least 6 characters";
+    }
+    return null;
+  }
+
+  void _signUp() async {
+    _logger.i("Starting sign-up process...");
+
+    // Log the current values in the text fields
+    _logger.i("Full Name: ${_fullNameController.text}");
+    _logger.i("Email: ${_emailController.text}");
+    _logger.i("Password: ${_passwordController.text}");
+
+    // Perform validation checks
+    final fullNameError = _validateFullName(_fullNameController.text);
+    final emailError = _validateEmail(_emailController.text);
+    final passwordError = _validatePassword(_passwordController.text);
+
+    // Log the validation results
+    _logger.i("Validation Results - Full Name Error: $fullNameError");
+    _logger.i("Validation Results - Email Error: $emailError");
+    _logger.i("Validation Results - Password Error: $passwordError");
+
+    // Update the state with the validation errors
+    setState(() {
+      _fullNameError = fullNameError;
+      _emailError = emailError;
+      _passwordError = passwordError;
+    });
+
+    // If any error occurs, stop and show validation messages
+    if (fullNameError != null || emailError != null || passwordError != null) {
+      _logger.w(
+          "Validation failed: Full Name Error: $fullNameError, Email Error: $emailError, Password Error: $passwordError");
+      return; // Stop if validation fails
+    }
+
+    setState(() {
+      _isLoading = true;
+    });
+
+    _logger.i("Validation passed, sending sign-up request...");
+
+    try {
+      final response = await ApiService.signUp(
+        _fullNameController.text,
+        _emailController.text,
+        _passwordController.text,
+      );
+
+      // Log the API response
+      _logger.i("API Response: $response");
+
+      setState(() {
+        _isLoading = false;
+      });
+
+      if (response.containsKey("message")) {
+        _logger.w("Sign-up failed: ${response["message"]}");
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content:
+                Center(child: Text(response["message"] ?? "Sign-up failed")),
+            backgroundColor: Colors.red,
+          ),
+        );
+      } else {
+        _logger.i("Sign-up successful, navigating to Dashboard...");
+
+        // Show success SnackBar
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Center(child: Text("Signed up successfully!")),
+            backgroundColor: Colors.green,
+          ),
+        );
+
+        // Navigate to Dashboard
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (context) => const DashboardScreen()),
+        );
+      }
+    } catch (e) {
+      // Log any exceptions that occur during the API call
+      _logger.e("Error during sign-up: $e");
+      setState(() {
+        _isLoading = false;
+      });
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Center(child: Text("An error occurred: ${e.toString()}")),
+          backgroundColor: Colors.red,
+        ),
+      );
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -49,62 +194,59 @@ class RegScreen extends StatelessWidget {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       const SizedBox(height: 20),
-                      const TextField(
+                      TextField(
+                        controller: _fullNameController,
                         decoration: InputDecoration(
-                          suffixIcon: Icon(Icons.check, color: Colors.grey),
                           labelText: 'Full Name',
-                          labelStyle: TextStyle(
+                          labelStyle: const TextStyle(
                             fontWeight: FontWeight.bold,
                             color: Color(0xffB81736),
                           ),
+                          errorText: _fullNameError,
                         ),
                       ),
                       const SizedBox(height: 15),
-                      const TextField(
+                      TextField(
+                        controller: _emailController,
                         decoration: InputDecoration(
-                          suffixIcon: Icon(Icons.check, color: Colors.grey),
                           labelText: 'Phone or Gmail',
-                          labelStyle: TextStyle(
+                          labelStyle: const TextStyle(
                             fontWeight: FontWeight.bold,
                             color: Color(0xffB81736),
                           ),
+                          errorText: _emailError,
                         ),
                       ),
                       const SizedBox(height: 15),
-                      const TextField(
-                        obscureText: true,
+                      TextField(
+                        controller: _passwordController,
+                        obscureText: _isObscure,
                         decoration: InputDecoration(
-                          suffixIcon:
-                              Icon(Icons.visibility_off, color: Colors.grey),
                           labelText: 'Password',
-                          labelStyle: TextStyle(
+                          labelStyle: const TextStyle(
                             fontWeight: FontWeight.bold,
                             color: Color(0xffB81736),
                           ),
-                        ),
-                      ),
-                      const SizedBox(height: 15),
-                      const TextField(
-                        obscureText: true,
-                        decoration: InputDecoration(
-                          suffixIcon:
-                              Icon(Icons.visibility_off, color: Colors.grey),
-                          labelText: 'Confirm Password',
-                          labelStyle: TextStyle(
-                            fontWeight: FontWeight.bold,
-                            color: Color(0xffB81736),
+                          errorText: _passwordError,
+                          suffixIcon: IconButton(
+                            onPressed: () {
+                              setState(() {
+                                _isObscure = !_isObscure;
+                              });
+                            },
+                            icon: Icon(
+                              _isObscure
+                                  ? Icons.visibility_off
+                                  : Icons.visibility,
+                              color: Colors.grey,
+                            ),
                           ),
                         ),
                       ),
                       const SizedBox(height: 50),
                       Center(
                         child: GestureDetector(
-                          onTap: () {
-                            Navigator.push(
-                                context,
-                                MaterialPageRoute(
-                                    builder: (context) => DashboardScreen()));
-                          },
+                          onTap: _isLoading ? null : _signUp,
                           child: Container(
                             height: 55,
                             width: 300,
@@ -115,29 +257,33 @@ class RegScreen extends StatelessWidget {
                                 Color(0xff281537),
                               ]),
                             ),
-                            child: const Center(
-                              child: Text(
-                                'SIGN UP',
-                                style: TextStyle(
-                                    fontWeight: FontWeight.bold,
-                                    fontSize: 20,
-                                    color: Colors.white),
-                              ),
+                            child: Center(
+                              child: _isLoading
+                                  ? const CircularProgressIndicator(
+                                      color: Colors.white)
+                                  : const Text(
+                                      'SIGN UP',
+                                      style: TextStyle(
+                                          fontWeight: FontWeight.bold,
+                                          fontSize: 20,
+                                          color: Colors.white),
+                                    ),
                             ),
                           ),
                         ),
                       ),
-                      const SizedBox(height: 110),
+                      const SizedBox(height: 190),
                       Align(
-                        alignment: Alignment.centerRight,
+                        alignment: Alignment.bottomRight,
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.end,
                           children: [
-                            const Text(
+                            Text(
                               "Already have an account?",
                               style: TextStyle(
-                                  fontWeight: FontWeight.bold,
-                                  color: Colors.grey),
+                                fontWeight: FontWeight.bold,
+                                color: Colors.grey,
+                              ),
                             ),
                             GestureDetector(
                               onTap: () {
@@ -149,17 +295,17 @@ class RegScreen extends StatelessWidget {
                                 );
                               },
                               child: const Text(
-                                "Sign in",
+                                "Sign In",
                                 style: TextStyle(
-                                    fontWeight: FontWeight.bold,
-                                    fontSize: 17,
-                                    color: Colors.black),
+                                  fontWeight: FontWeight.bold,
+                                  fontSize: 17,
+                                  color: Colors.black,
+                                ),
                               ),
                             ),
                           ],
                         ),
                       ),
-                      const SizedBox(height: 20),
                     ],
                   ),
                 ),

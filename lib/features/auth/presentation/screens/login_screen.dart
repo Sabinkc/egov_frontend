@@ -1,4 +1,3 @@
-
 import 'package:egov_project/features/auth/data/api_service.dart';
 import 'package:egov_project/features/auth/presentation/screens/signup_screen.dart';
 import 'package:egov_project/features/dashboard/presentation/dashboard_screen.dart';
@@ -85,7 +84,7 @@ class LoginScreenState extends State<LoginScreen> {
         _logger.e("Login failed: ${response['message']}");
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text(response["message"] ?? "Login failed"),
+            content: Center(child: Text(response["message"] ?? "Login failed")),
             backgroundColor: Colors.red,
           ),
         );
@@ -99,7 +98,8 @@ class LoginScreenState extends State<LoginScreen> {
 
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text("An error occurred. Please try again later."),
+          content:
+              Center(child: Text("An error occurred. Please try again later.")),
           backgroundColor: Colors.red,
         ),
       );
@@ -123,7 +123,7 @@ class LoginScreenState extends State<LoginScreen> {
             child: const Padding(
               padding: EdgeInsets.only(top: 110.0, left: 22),
               child: Text(
-                'Hello\nSign in!',
+                'Welcome\nSign in!',
                 style: TextStyle(
                   fontSize: 30,
                   color: Colors.white,
@@ -154,10 +154,7 @@ class LoginScreenState extends State<LoginScreen> {
                         TextField(
                           controller: _emailController,
                           decoration: InputDecoration(
-                            suffixIcon: Icon(
-                          Icons.visibility
-                            ),
-                            labelText: 'Gmail',
+                            labelText: 'Email',
                             labelStyle: const TextStyle(
                               fontWeight: FontWeight.bold,
                               color: Color(0xffB81736),
@@ -181,12 +178,10 @@ class LoginScreenState extends State<LoginScreen> {
                                 });
                               },
                               icon: Icon(
-                                _passwordError == null
+                                isObscure
                                     ? Icons.visibility_off
-                                    : Icons.error,
-                                color: _passwordError == null
-                                    ? Colors.grey
-                                    : Colors.red,
+                                    : Icons.visibility,
+                                color: Colors.grey,
                               ),
                             ),
                             labelText: 'Password',
@@ -199,18 +194,6 @@ class LoginScreenState extends State<LoginScreen> {
                           onChanged: (value) => setState(() {
                             _passwordError = _validatePassword(value);
                           }),
-                        ),
-                        const SizedBox(height: 20),
-                        const Align(
-                          alignment: Alignment.centerRight,
-                          child: Text(
-                            'Forgot Password?',
-                            style: TextStyle(
-                              fontWeight: FontWeight.bold,
-                              fontSize: 17,
-                              color: Color(0xff281537),
-                            ),
-                          ),
                         ),
                         const SizedBox(height: 40),
                         GestureDetector(
@@ -240,7 +223,7 @@ class LoginScreenState extends State<LoginScreen> {
                             ),
                           ),
                         ),
-                        const SizedBox(height: 20),
+                        const SizedBox(height: 280),
                         Align(
                           alignment: Alignment.bottomRight,
                           child: Column(
