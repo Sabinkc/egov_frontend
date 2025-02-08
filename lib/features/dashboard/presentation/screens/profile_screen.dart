@@ -1,80 +1,4 @@
-// import 'package:egov_project/features/auth/presentation/screens/login_screen.dart';
-// import 'package:flutter/material.dart';
-// import 'package:shared_preferences/shared_preferences.dart';
 
-// class ProfileScreen extends StatelessWidget {
-//   const ProfileScreen({super.key});
-
-//   Future<void> _logout(BuildContext context) async {
-//     try {
-//       showDialog(
-//         context: context,
-//         barrierDismissible: false,
-//         builder: (BuildContext context) {
-//           return AlertDialog(
-//             content: Row(
-//               children: [
-//                 CircularProgressIndicator(),
-//                 SizedBox(width: 20),
-//                 Text("Logging out..."),
-//               ],
-//             ),
-//           );
-//         },
-//       );
-
-//       await Future.delayed(Duration(seconds: 1));
-//       final prefs = await SharedPreferences.getInstance();
-//       await prefs.remove('accessToken');
-
-//       Navigator.pop(context);
-//       Navigator.pushReplacement(
-//         context,
-//         MaterialPageRoute(builder: (context) => LoginScreen()),
-//       );
-//     } catch (e) {
-//       ScaffoldMessenger.of(context).showSnackBar(
-//         SnackBar(content: Text('Failed to logout: $e')),
-//       );
-//     }
-//   }
-
-//   @override
-//   Widget build(BuildContext context) {
-//     return Scaffold(
-//        appBar: AppBar(
-//         backgroundColor: Color(0xffB81736),
-//         title: Text(
-//           "Profile",
-//           style: TextStyle(color: Colors.white),
-//         ),
-//         centerTitle: true,
-//         actions: [
-//           PopupMenuButton<String>(
-//             icon: Icon(
-//               Icons.more_vert,
-//               color: Colors.white,
-//             ),
-//             color: Colors.white,
-//             onSelected: (value) {
-//               if (value == 'logout') {
-//                 _logout(context);
-//               }
-//             },
-//             itemBuilder: (BuildContext context) {
-//               return [
-//                 PopupMenuItem<String>(
-//                   value: 'logout',
-//                   child: Text('Logout'),
-//                 ),
-//               ];
-//             },
-//           ),
-//         ],
-//       ),
-//     );
-//   }
-// }
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:http/http.dart' as http;
@@ -85,10 +9,10 @@ class ProfileScreen extends StatefulWidget {
   const ProfileScreen({super.key});
 
   @override
-  _ProfileScreenState createState() => _ProfileScreenState();
+  ProfileScreenState createState() => ProfileScreenState();
 }
 
-class _ProfileScreenState extends State<ProfileScreen> {
+class ProfileScreenState extends State<ProfileScreen> {
   Map<String, dynamic>? _userProfile;
   bool _isLoading = true;
   String _errorMessage = '';
@@ -151,7 +75,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
     } on Exception catch (e) {
       setState(() {
         _isLoading = false;
-        _errorMessage = 'Request timed out. Please check your internet connection.';
+        _errorMessage = 'Request timed out. Please check your internet connection. $e';
       });
     } catch (e) {
       setState(() {
@@ -182,16 +106,20 @@ class _ProfileScreenState extends State<ProfileScreen> {
       await Future.delayed(Duration(seconds: 1));
       final prefs = await SharedPreferences.getInstance();
       await prefs.remove('accessToken');
-
-      Navigator.pop(context);
+if(context.mounted){
+   Navigator.pop(context);
       Navigator.pushReplacement(
         context,
         MaterialPageRoute(builder: (context) => LoginScreen()),
       );
+}
+     
     } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
+     if(context.mounted){
+       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('Failed to logout: $e')),
       );
+     }
     }
   }
 

@@ -48,63 +48,69 @@ class LoginScreenState extends State<LoginScreen> {
     return null;
   }
 
-  void _login() async {
+void _login() async {
+  setState(() {
+    _emailError = _validateEmail(_emailController.text);
+    _passwordError = _validatePassword(_passwordController.text);
+  });
+
+  if (_emailError != null || _passwordError != null) {
+    return; // Stop if validation fails
+  }
+
+  setState(() {
+    _isLoading = true;
+  });
+
+  final messenger = ScaffoldMessenger.of(context); // Store before await
+
+  try {
+    final response = await ApiService.login(
+      _emailController.text,
+      _passwordController.text,
+    );
+
+    if (!mounted) return; // Ensure the widget is still in the tree
+
     setState(() {
-      _emailError = _validateEmail(_emailController.text);
-      _passwordError = _validatePassword(_passwordController.text);
+      _isLoading = false;
     });
 
-    if (_emailError != null || _passwordError != null) {
-      return; // Stop if validation fails
-    }
+    _logger.d("Login Response: $response");
 
-    setState(() {
-      _isLoading = true;
-    });
-
-    try {
-      final response = await ApiService.login(
-        _emailController.text,
-        _passwordController.text,
-      );
-
-      setState(() {
-        _isLoading = false;
-      });
-
-      _logger.d("Login Response: $response");
-
-      if (response.containsKey("accessToken")) {
+    if (response.containsKey("accessToken")) {
+      if (context.mounted) {
         Navigator.pushReplacement(
           context,
           MaterialPageRoute(builder: (context) => const DashboardScreen()),
         );
-      } else {
-        // Log and show error message if access token is not returned
-        _logger.e("Login failed: ${response['message']}");
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Center(child: Text(response["message"] ?? "Login failed")),
-            backgroundColor: Colors.red,
-          ),
-        );
       }
-    } catch (e) {
-      setState(() {
-        _isLoading = false;
-      });
-      // Log the error
-      _logger.e("Login failed with error: $e");
-
-      ScaffoldMessenger.of(context).showSnackBar(
+    } else {
+      _logger.e("Login failed: ${response['message']}");
+      messenger.showSnackBar( // Use stored messenger instance
         SnackBar(
-          content:
-              Center(child: Text("An error occurred. Please try again later.")),
+          content: Center(child: Text(response["message"] ?? "Login failed")),
           backgroundColor: Colors.red,
         ),
       );
     }
+  } catch (e) {
+    if (!mounted) return; // Ensure the widget is still in the tree
+
+    setState(() {
+      _isLoading = false;
+    });
+
+    _logger.e("Login failed with error: $e");
+
+    messenger.showSnackBar( // Use stored messenger instance
+      SnackBar(
+        content: Center(child: Text("An error occurred. Please try again later.")),
+        backgroundColor: Colors.red,
+      ),
+    );
   }
+}
 
   @override
   Widget build(BuildContext context) {

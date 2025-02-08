@@ -25,7 +25,18 @@ class HomeScreenState extends State<HomeScreen> {
     super.initState();
     _fetchData();
   }
-
+Future<void> _launchUrl(Uri url, BuildContext context) async {
+    if (!await launchUrl(url)) {
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Could not launch $url'),
+            duration: Duration(seconds: 3),
+          ),
+        );
+      }
+    }
+  }
   // Function to fetch data from the API with logger integrated for better debugging
   Future<void> _fetchData() async {
     final url = 'https://egov-backend.vercel.app/api/govt/gov-web-data';
@@ -198,26 +209,11 @@ class HomeScreenState extends State<HomeScreen> {
                             SizedBox(height: 5),
                             GestureDetector(
                               onTap: () {
-                                // Open the URL in the browser
-                                // launchURL(item['website_url'] ?? '');
-                                final Uri url =
-                                    Uri.parse(item['website_url']);
+                              
+     final Uri url = Uri.parse(item['website_url']);
 
-                                Future<void> _launchUrl() async {
-                                  if (!await launchUrl(url)) {
-                                    // Show a Snackbar if URL can't be launched
-                                 if(context.mounted){
-                                     ScaffoldMessenger.of(context).showSnackBar(
-                                      SnackBar(
-                                        content: Text('Could not launch $url'),
-                                        duration: Duration(seconds: 3),
-                                      ),
-                                    );
-                                 }
-                                  }
-                                }
-
-                                _launchUrl();
+        // Call the _launchUrl method
+        _launchUrl(url, context);
                               },
                               child: Text(
                                 item['website_url'] ?? 'No URL',

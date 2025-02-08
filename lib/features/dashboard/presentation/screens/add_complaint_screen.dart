@@ -11,10 +11,10 @@ class AddComplaintScreen extends StatefulWidget {
   const AddComplaintScreen({super.key});
 
   @override
-  _AddComplaintScreenState createState() => _AddComplaintScreenState();
+  AddComplaintScreenState createState() => AddComplaintScreenState();
 }
 
-class _AddComplaintScreenState extends State<AddComplaintScreen> {
+class AddComplaintScreenState extends State<AddComplaintScreen> {
   final TextEditingController _subjectController = TextEditingController();
   final TextEditingController _descriptionController = TextEditingController();
   final TextEditingController _categoryController = TextEditingController();
@@ -36,6 +36,7 @@ class _AddComplaintScreenState extends State<AddComplaintScreen> {
 
         if (fileExtension != 'jpg' && fileExtension != 'jpeg' && fileExtension != 'png') {
           _logger.w("Unsupported file format: $fileExtension");
+          if(!mounted ) return ;
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(content: Text('Only JPG, JPEG, and PNG formats are allowed.')),
           );
@@ -51,92 +52,107 @@ class _AddComplaintScreenState extends State<AddComplaintScreen> {
       }
     } catch (e) {
       _logger.e("Error picking media: $e");
+      if(!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('Failed to pick media: $e')),
       );
     }
   }
-
-  Future<void> _submitComplaint() async {
-    if (_subjectController.text.isEmpty ||
-        _descriptionController.text.isEmpty ||
-        _categoryController.text.isEmpty ||
-        _selectedMedia == null) {
+Future<void> _submitComplaint() async {
+  if (_subjectController.text.isEmpty ||
+      _descriptionController.text.isEmpty ||
+      _categoryController.text.isEmpty ||
+      _selectedMedia == null) {
+    if (context.mounted) { // Ensure the widget is still mounted
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('Please fill all fields and select an image')),
       );
-      return;
     }
+    return;
+  }
 
-    // Check the file extension before submitting
-    String fileExtension = _selectedMedia!.path.split('.').last.toLowerCase();
-    _logger.d("File extension before submission: $fileExtension");
+  // Check the file extension before submitting
+  String fileExtension = _selectedMedia!.path.split('.').last.toLowerCase();
+  _logger.d("File extension before submission: $fileExtension");
 
-    if (fileExtension != 'jpg' && fileExtension != 'jpeg' && fileExtension != 'png') {
-      _logger.w("Unsupported file format: $fileExtension");
+  if (fileExtension != 'jpg' && fileExtension != 'jpeg' && fileExtension != 'png') {
+    _logger.w("Unsupported file format: $fileExtension");
+    if (context.mounted) { // Ensure the widget is still mounted
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('Only JPG, JPEG, and PNG formats are allowed.')),
       );
-      return;
     }
+    return;
+  }
 
-    setState(() => _isSubmitting = true);
-    var url = Uri.parse("https://egov-backend.vercel.app/api/file/complain");
+  setState(() => _isSubmitting = true);
+  var url = Uri.parse("https://egov-backend.vercel.app/api/file/complain");
 
-    final prefs = await SharedPreferences.getInstance();
-    String? token = prefs.getString('accessToken');
+  final prefs = await SharedPreferences.getInstance();
+  String? token = prefs.getString('accessToken');
 
-    if (token == null) {
-      _logger.w("No token found. Redirecting to login.");
+  if (token == null) {
+    _logger.w("No token found. Redirecting to login.");
+    if(!mounted) return;
+    if (context.mounted) { // Ensure the widget is still mounted
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('Session expired. Please log in again.')),
       );
-      Navigator.pushReplacement(
-          context, MaterialPageRoute(builder: (context) => LoginScreen()));
-      return;
     }
+    if (context.mounted) { // Ensure the widget is still mounted
+      Navigator.pushReplacement(
+        context, MaterialPageRoute(builder: (context) => LoginScreen()));
+    }
+    return;
+  }
 
-    var request = http.MultipartRequest("POST", url);
-    request.headers['Authorization'] = "Bearer $token";
-    request.fields['subject'] = _subjectController.text;
-    request.fields['description'] = _descriptionController.text;
-    request.fields['category'] = _categoryController.text;
-    request.files.add(
-      await http.MultipartFile.fromPath('image', _selectedMedia!.path),
-    );
+  var request = http.MultipartRequest("POST", url);
+  request.headers['Authorization'] = "Bearer $token";
+  request.fields['subject'] = _subjectController.text;
+  request.fields['description'] = _descriptionController.text;
+  request.fields['category'] = _categoryController.text;
+  request.files.add(
+    await http.MultipartFile.fromPath('image', _selectedMedia!.path),
+  );
 
-    _logger.i("Submitting complaint...");
-    _logger.d("Subject: ${_subjectController.text}");
-    _logger.d("Description: ${_descriptionController.text}");
-    _logger.d("Category: ${_categoryController.text}");
-    _logger.d("Image Path: ${_selectedMedia!.path}");
-    _logger.d("Image Format: $fileExtension");
-    _logger.d("Token: $token");
+  _logger.i("Submitting complaint...");
+  _logger.d("Subject: ${_subjectController.text}");
+  _logger.d("Description: ${_descriptionController.text}");
+  _logger.d("Category: ${_categoryController.text}");
+  _logger.d("Image Path: ${_selectedMedia!.path}");
+  _logger.d("Image Format: $fileExtension");
+  _logger.d("Token: $token");
 
-    try {
-      var response = await request.send();
-      var responseData = await response.stream.bytesToString();
-      var jsonResponse = jsonDecode(responseData);
+  try {
+    var response = await request.send();
+    var responseData = await response.stream.bytesToString();
+    var jsonResponse = jsonDecode(responseData);
 
-      _logger.i("API Response Status: ${response.statusCode}");
-      _logger.d("API Response Body: $jsonResponse");
+    _logger.i("API Response Status: ${response.statusCode}");
+    _logger.d("API Response Body: $jsonResponse");
 
-      setState(() {
-        _apiResponse = jsonResponse['message'] ?? 'Complaint submitted!';
-      });
-
+    setState(() {
+      _apiResponse = jsonResponse['message'] ?? 'Complaint submitted!';
+    });
+if(!mounted) return;
+    if (context.mounted) { // Ensure the widget is still mounted
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text(_apiResponse)),
       );
-    } catch (e) {
-      _logger.e("Error submitting complaint: $e");
+    }
+  } catch (e) {
+    _logger.e("Error submitting complaint: $e");
+    if(!mounted) return;
+    if (context.mounted) { // Ensure the widget is still mounted
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('Failed to submit complaint')),
       );
     }
-
-    setState(() => _isSubmitting = false);
   }
+
+  setState(() => _isSubmitting = false);
+}
+
 
   Future<void> _logout() async {
     showDialog(
@@ -158,7 +174,7 @@ class _AddComplaintScreenState extends State<AddComplaintScreen> {
     await Future.delayed(Duration(seconds: 1));
     final prefs = await SharedPreferences.getInstance();
     await prefs.remove('accessToken');
-
+if(!mounted) return;
     Navigator.pop(context);
     Navigator.pushReplacement(
         context, MaterialPageRoute(builder: (context) => LoginScreen()));

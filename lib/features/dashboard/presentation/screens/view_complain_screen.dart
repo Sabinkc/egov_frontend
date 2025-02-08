@@ -8,10 +8,10 @@ class ViewComplainScreen extends StatefulWidget {
   const ViewComplainScreen({super.key});
 
   @override
-  _ViewComplainScreenState createState() => _ViewComplainScreenState();
+  ViewComplainScreenState createState() => ViewComplainScreenState();
 }
 
-class _ViewComplainScreenState extends State<ViewComplainScreen> {
+class ViewComplainScreenState extends State<ViewComplainScreen> {
   List<dynamic> _complaints = [];
   bool _isLoading = true;
   String _errorMessage = '';
@@ -74,7 +74,7 @@ class _ViewComplainScreenState extends State<ViewComplainScreen> {
     } on Exception catch (e) {
       setState(() {
         _isLoading = false;
-        _errorMessage = 'Request timed out. Please check your internet connection.';
+        _errorMessage = 'Request timed out. Please check your internet connection.$e';
       });
     } catch (e) {
       setState(() {
@@ -106,15 +106,19 @@ class _ViewComplainScreenState extends State<ViewComplainScreen> {
       final prefs = await SharedPreferences.getInstance();
       await prefs.remove('accessToken');
 
-      Navigator.pop(context);
+  if(context.mounted){
+        Navigator.pop(context);
       Navigator.pushReplacement(
         context,
         MaterialPageRoute(builder: (context) => LoginScreen()),
       );
+  }
     } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
+     if(context.mounted){
+       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('Failed to logout: $e')),
       );
+     }
     }
   }
 

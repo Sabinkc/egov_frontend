@@ -55,92 +55,102 @@ class _RegScreenState extends State<RegScreen> {
     }
     return null;
   }
+void _signUp() async {
+  _logger.i("Starting sign-up process...");
 
-  void _signUp() async {
-    _logger.i("Starting sign-up process...");
+  // Log the current values in the text fields
+  _logger.i("Full Name: ${_fullNameController.text}");
+  _logger.i("Email: ${_emailController.text}");
+  _logger.i("Password: ${_passwordController.text}");
 
-    // Log the current values in the text fields
-    _logger.i("Full Name: ${_fullNameController.text}");
-    _logger.i("Email: ${_emailController.text}");
-    _logger.i("Password: ${_passwordController.text}");
+  // Perform validation checks
+  final fullNameError = _validateFullName(_fullNameController.text);
+  final emailError = _validateEmail(_emailController.text);
+  final passwordError = _validatePassword(_passwordController.text);
 
-    // Perform validation checks
-    final fullNameError = _validateFullName(_fullNameController.text);
-    final emailError = _validateEmail(_emailController.text);
-    final passwordError = _validatePassword(_passwordController.text);
+  // Log the validation results
+  _logger.i("Validation Results - Full Name Error: $fullNameError");
+  _logger.i("Validation Results - Email Error: $emailError");
+  _logger.i("Validation Results - Password Error: $passwordError");
 
-    // Log the validation results
-    _logger.i("Validation Results - Full Name Error: $fullNameError");
-    _logger.i("Validation Results - Email Error: $emailError");
-    _logger.i("Validation Results - Password Error: $passwordError");
+  // Update the state with the validation errors
+  setState(() {
+    _fullNameError = fullNameError;
+    _emailError = emailError;
+    _passwordError = passwordError;
+  });
 
-    // Update the state with the validation errors
+  // If any error occurs, stop and show validation messages
+  if (fullNameError != null || emailError != null || passwordError != null) {
+    _logger.w(
+        "Validation failed: Full Name Error: $fullNameError, Email Error: $emailError, Password Error: $passwordError");
+    return; // Stop if validation fails
+  }
+
+  setState(() {
+    _isLoading = true;
+  });
+
+  _logger.i("Validation passed, sending sign-up request...");
+
+  try {
+    final response = await ApiService.signUp(
+      _fullNameController.text,
+      _emailController.text,
+      _passwordController.text,
+    );
+
+    if (!mounted) return; // Ensure the widget is still in the tree
+
+    // Log the API response
+    _logger.i("API Response: $response");
+
     setState(() {
-      _fullNameError = fullNameError;
-      _emailError = emailError;
-      _passwordError = passwordError;
+      _isLoading = false;
     });
 
-    // If any error occurs, stop and show validation messages
-    if (fullNameError != null || emailError != null || passwordError != null) {
-      _logger.w(
-          "Validation failed: Full Name Error: $fullNameError, Email Error: $emailError, Password Error: $passwordError");
-      return; // Stop if validation fails
-    }
-
-    setState(() {
-      _isLoading = true;
-    });
-
-    _logger.i("Validation passed, sending sign-up request...");
-
-    try {
-      final response = await ApiService.signUp(
-        _fullNameController.text,
-        _emailController.text,
-        _passwordController.text,
-      );
-
-      // Log the API response
-      _logger.i("API Response: $response");
-
-      setState(() {
-        _isLoading = false;
-      });
-
-      if (response.containsKey("message")) {
-        _logger.w("Sign-up failed: ${response["message"]}");
+    if (response.containsKey("message")) {
+      _logger.w("Sign-up failed: ${response["message"]}");
+      if (context.mounted) { // Ensure the widget is still mounted
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content:
-                Center(child: Text(response["message"] ?? "Sign-up failed")),
+            content: Center(child: Text(response["message"] ?? "Sign-up failed")),
             backgroundColor: Colors.red,
           ),
         );
-      } else {
-        _logger.i("Sign-up successful, navigating to Dashboard...");
+      }
+    } else {
+      _logger.i("Sign-up successful, navigating to Dashboard...");
 
-        // Show success SnackBar
+      // Show success SnackBar
+      if (context.mounted) { // Ensure the widget is still mounted
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
             content: Center(child: Text("Signed up successfully!")),
             backgroundColor: Colors.green,
           ),
         );
+      }
 
-        // Navigate to Dashboard
+      // Navigate to Dashboard
+      if (context.mounted) { // Ensure the widget is still mounted
         Navigator.pushReplacement(
           context,
           MaterialPageRoute(builder: (context) => const DashboardScreen()),
         );
       }
-    } catch (e) {
-      // Log any exceptions that occur during the API call
-      _logger.e("Error during sign-up: $e");
-      setState(() {
-        _isLoading = false;
-      });
+    }
+  } catch (e) {
+    if (!mounted) return; // Ensure the widget is still in the tree
 
+    // Log any exceptions that occur during the API call
+    _logger.e("Error during sign-up: $e");
+
+    setState(() {
+      _isLoading = false;
+    });
+
+    if (context.mounted) { // Ensure the widget is still mounted
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Center(child: Text("An error occurred: ${e.toString()}")),
@@ -149,6 +159,8 @@ class _RegScreenState extends State<RegScreen> {
       );
     }
   }
+}
+
 
   @override
   Widget build(BuildContext context) {
