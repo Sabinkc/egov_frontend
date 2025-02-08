@@ -7,11 +7,12 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 class HomeScreen extends StatefulWidget {
+  const HomeScreen({super.key});
   @override
-  _HomeScreenState createState() => _HomeScreenState();
+  HomeScreenState createState() => HomeScreenState();
 }
 
-class _HomeScreenState extends State<HomeScreen> {
+class HomeScreenState extends State<HomeScreen> {
   List<dynamic> _data = [];
   bool _isLoading = true;
   String _errorMessage = '';
@@ -78,8 +79,6 @@ class _HomeScreenState extends State<HomeScreen> {
     }
   }
 
-
-
   Future<void> _logout(BuildContext context) async {
     // Show loading dialog
     showDialog(
@@ -89,7 +88,9 @@ class _HomeScreenState extends State<HomeScreen> {
         return AlertDialog(
           content: Row(
             children: [
-              CircularProgressIndicator(),
+              CircularProgressIndicator(
+                strokeWidth: 3,
+              ),
               SizedBox(width: 20),
               Text("Logging out..."),
             ],
@@ -104,12 +105,14 @@ class _HomeScreenState extends State<HomeScreen> {
     final prefs = await SharedPreferences.getInstance();
     await prefs.remove('accessToken'); // Remove token
 
-    Navigator.pop(context); // Close the dialog
-    Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(
-            builder: (context) => LoginScreen()) // Navigate to Login screen
-        );
+    if (context.mounted) {
+      Navigator.pop(context); // Close the dialog
+      Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(
+              builder: (context) => LoginScreen()) // Navigate to Login screen
+          );
+    }
   }
 
   @override
@@ -197,22 +200,24 @@ class _HomeScreenState extends State<HomeScreen> {
                               onTap: () {
                                 // Open the URL in the browser
                                 // launchURL(item['website_url'] ?? '');
-                                        final Uri _url = Uri.parse(
-                            item['website_url' ?? '']);
+                                final Uri url =
+                                    Uri.parse(item['website_url']);
 
-                        Future<void> _launchUrl() async {
-                          if (!await launchUrl(_url)) {
-                            // Show a Snackbar if URL can't be launched
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              SnackBar(
-                                content: Text('Could not launch $_url'),
-                                duration: Duration(seconds: 3),
-                              ),
-                            );
-                          }
-                        }
+                                Future<void> _launchUrl() async {
+                                  if (!await launchUrl(url)) {
+                                    // Show a Snackbar if URL can't be launched
+                                 if(context.mounted){
+                                     ScaffoldMessenger.of(context).showSnackBar(
+                                      SnackBar(
+                                        content: Text('Could not launch $url'),
+                                        duration: Duration(seconds: 3),
+                                      ),
+                                    );
+                                 }
+                                  }
+                                }
 
-                        _launchUrl();
+                                _launchUrl();
                               },
                               child: Text(
                                 item['website_url'] ?? 'No URL',
