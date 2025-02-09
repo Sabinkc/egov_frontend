@@ -1,4 +1,3 @@
-
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:http/http.dart' as http;
@@ -59,7 +58,8 @@ class ProfileScreenState extends State<ProfileScreen> {
       } else {
         setState(() {
           _isLoading = false;
-          _errorMessage = 'Failed to load profile. Status code: ${response.statusCode}';
+          _errorMessage =
+              'Failed to load profile. Status code: ${response.statusCode}';
         });
       }
     } on http.ClientException catch (e) {
@@ -75,9 +75,11 @@ class ProfileScreenState extends State<ProfileScreen> {
     } on Exception catch (e) {
       setState(() {
         _isLoading = false;
-        _errorMessage = 'Request timed out. Please check your internet connection. $e';
+        _errorMessage =
+            'Request timed out. Please check your internet connection. $e';
       });
     } catch (e) {
+      if (!mounted) return;
       setState(() {
         _isLoading = false;
         _errorMessage = 'An unexpected error occurred: $e';
@@ -106,20 +108,19 @@ class ProfileScreenState extends State<ProfileScreen> {
       await Future.delayed(Duration(seconds: 1));
       final prefs = await SharedPreferences.getInstance();
       await prefs.remove('accessToken');
-if(context.mounted){
-   Navigator.pop(context);
-      Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(builder: (context) => LoginScreen()),
-      );
-}
-     
+      if (context.mounted) {
+        Navigator.pop(context);
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (context) => LoginScreen()),
+        );
+      }
     } catch (e) {
-     if(context.mounted){
-       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Failed to logout: $e')),
-      );
-     }
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Failed to logout: $e')),
+        );
+      }
     }
   }
 
@@ -177,7 +178,8 @@ if(context.mounted){
                       ),
                     )
                   : SingleChildScrollView(
-                      padding: EdgeInsets.all(16),
+                      padding:
+                          EdgeInsets.symmetric(horizontal: 20, vertical: 40),
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
@@ -193,7 +195,8 @@ if(context.mounted){
                             ),
                           ),
                           SizedBox(height: 20),
-                          _buildProfileItem("Username", _userProfile!['username']),
+                          _buildProfileItem(
+                              "Username", _userProfile!['username']),
                           _buildProfileItem("Email", _userProfile!['email']),
                           _buildProfileItem("Role", _userProfile!['role']),
                           _buildProfileItem(
