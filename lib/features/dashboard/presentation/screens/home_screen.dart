@@ -1,4 +1,3 @@
-
 import 'package:egov_project/features/auth/presentation/screens/login_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
@@ -119,9 +118,10 @@ class HomeScreenState extends State<HomeScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
+        automaticallyImplyLeading: false,
         backgroundColor: Color(0xffB81736),
         title: Text(
-          "Government Agencies",
+          "Nepal Government Agencies",
           style: TextStyle(
               color: Colors.white, fontSize: 20, fontWeight: FontWeight.bold),
         ),
@@ -274,7 +274,6 @@ class HomeScreenState extends State<HomeScreen> {
                                             style: TextStyle(
                                               fontSize: 14,
                                               color: Colors.blue,
-                                           
                                             ),
                                             overflow: TextOverflow.ellipsis,
                                           ),

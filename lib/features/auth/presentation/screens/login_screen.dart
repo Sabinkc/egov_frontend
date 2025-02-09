@@ -121,7 +121,7 @@ class LoginScreenState extends State<LoginScreen> {
       body: SingleChildScrollView(
         child: ConstrainedBox(
           constraints: BoxConstraints(
-            maxHeight: MediaQuery.of(context).size.height + 20,
+            maxHeight: MediaQuery.of(context).size.height + 100,
           ),
           child: Stack(
             children: [
@@ -251,7 +251,7 @@ class LoginScreenState extends State<LoginScreen> {
                                 ),
                                 GestureDetector(
                                   onTap: () {
-                                    Navigator.pushReplacement(
+                                    Navigator.push(
                                       context,
                                       MaterialPageRoute(
                                           builder: (context) =>

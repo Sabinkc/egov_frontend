@@ -1,7 +1,6 @@
 import 'package:egov_project/features/auth/presentation/screens/login_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:egov_project/features/auth/data/api_service.dart';
-import 'package:egov_project/features/dashboard/presentation/dashboard_screen.dart';
 import 'package:logger/logger.dart';
 // Import the logger
 
@@ -137,13 +136,13 @@ class _RegScreenState extends State<RegScreen> {
         }
 
         // Navigate to Dashboard
-        if (context.mounted) {
-          // Ensure the widget is still mounted
-          Navigator.pushReplacement(
-            context,
-            MaterialPageRoute(builder: (context) => const DashboardScreen()),
-          );
-        }
+        // if (context.mounted) {
+        //   // Ensure the widget is still mounted
+        //   Navigator.pushReplacement(
+        //     context,
+        //     MaterialPageRoute(builder: (context) => const DashboardScreen()),
+        //   );
+        // }
       }
     } catch (e) {
       if (!mounted) return; // Ensure the widget is still in the tree
@@ -173,7 +172,7 @@ class _RegScreenState extends State<RegScreen> {
       body: SingleChildScrollView(
         child: ConstrainedBox(
           constraints: BoxConstraints(
-            maxHeight: MediaQuery.of(context).size.height,
+            maxHeight: MediaQuery.of(context).size.height+100,
           ),
           child: Stack(
             children: [
