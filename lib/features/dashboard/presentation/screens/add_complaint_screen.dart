@@ -71,7 +71,11 @@ class AddComplaintScreenState extends State<AddComplaintScreen> {
         // Ensure the widget is still mounted
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
-              content: Text('Please fill all fields and select an image')),
+              backgroundColor: Colors.red,
+              content: Center(
+                child: Text('Please fill all fields and select an image',
+                    style: TextStyle(color: Colors.white)),
+              )),
         );
       }
       return;
@@ -152,7 +156,7 @@ class AddComplaintScreenState extends State<AddComplaintScreen> {
         // Ensure the widget is still mounted
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-              backgroundColor: Color(0xffB81736),
+              backgroundColor: Colors.red,
               content: Center(
                   child: Text(
                 _apiResponse,
@@ -167,10 +171,12 @@ class AddComplaintScreenState extends State<AddComplaintScreen> {
         // Ensure the widget is still mounted
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
-              backgroundColor: Color(0xffB81736),
-              content: Text(
-                'Failed to submit complaint',
-                style: TextStyle(color: Colors.white),
+              backgroundColor: Colors.red,
+              content: Center(
+                child: Text(
+                  'Failed to submit complaint',
+                  style: TextStyle(color: Colors.white),
+                ),
               )),
         );
       }

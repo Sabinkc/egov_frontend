@@ -133,6 +133,7 @@ class ViewComplainScreenState extends State<ViewComplainScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
+        automaticallyImplyLeading: false,
         backgroundColor: Color(0xffB81736),
         title: Text(
           "View Your Complaints",
