@@ -88,6 +88,15 @@ class EditComplaintScreenState extends State<EditComplaintScreen> {
         if (!mounted) {
           return;
         }
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+            backgroundColor: Colors.red,
+            duration: Duration(milliseconds: 500),
+            content: Center(
+              child: Text(
+                "Complaint Edited Successfully!",
+                style: TextStyle(color: Colors.white),
+              ),
+            )));
         Navigator.pop(context, true); // Return success
       } else {
         setState(() {
@@ -109,51 +118,139 @@ class EditComplaintScreenState extends State<EditComplaintScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
+        automaticallyImplyLeading: false,
+        leading: IconButton(
+            onPressed: () {
+              Navigator.pop(context);
+            },
+            icon: Icon(
+              Icons.arrow_back_ios,
+              color: Colors.white,
+            )),
         backgroundColor: Color(0xffB81736),
-        title: Text("Edit Complaint"),
+        title: Text(
+          "Edit Complaint",
+          style: TextStyle(
+              color: Colors.white, fontSize: 20, fontWeight: FontWeight.bold),
+        ),
+        centerTitle: true,
+        elevation: 10,
+        shadowColor: Colors.grey,
       ),
       body: SingleChildScrollView(
-        padding: EdgeInsets.all(16),
+        padding: EdgeInsets.all(20),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             // Subject Text Field
             TextField(
               controller: _subjectController,
-              decoration: InputDecoration(labelText: 'Subject'),
+              decoration: InputDecoration(
+                labelText: 'Subject',
+                labelStyle: TextStyle(color: Colors.grey, fontSize: 16),
+                enabledBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(8),
+                  borderSide: BorderSide(
+                    color: Colors.grey,
+                  ),
+                ),
+                focusedBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                  borderSide: BorderSide(color: Colors.grey),
+                ),
+                filled: true,
+                fillColor: Colors.white,
+                prefixIcon: Icon(Icons.subject, color: Colors.grey),
+              ),
             ),
+
             SizedBox(height: 10),
 
             // Description Text Field
             TextField(
               controller: _descriptionController,
               maxLines: 4,
-              decoration: InputDecoration(labelText: 'Description'),
+              decoration: InputDecoration(
+                labelText: 'Description',
+                labelStyle: TextStyle(color: Colors.grey, fontSize: 16),
+                enabledBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(8),
+                  borderSide: BorderSide(color: Colors.grey),
+                ),
+                focusedBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(8),
+                  borderSide: BorderSide(
+                    color: Colors.grey,
+                  ),
+                ),
+                filled: true,
+                fillColor: Colors.white,
+                prefixIcon: Icon(Icons.description, color: Colors.grey),
+                alignLabelWithHint:
+                    true, // Aligns label properly for multiline text fields
+              ),
             ),
+
             SizedBox(height: 10),
 
-            // Category Text Field (Manual Entry)
             TextField(
               controller: _categoryController,
-              decoration: InputDecoration(labelText: 'Category'),
+              decoration: InputDecoration(
+                labelText: 'Category',
+                labelStyle: TextStyle(color: Colors.grey, fontSize: 16),
+                enabledBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(8),
+                  borderSide: BorderSide(color: Colors.grey),
+                ),
+                focusedBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(8),
+                  borderSide: BorderSide(color: Colors.grey),
+                ),
+                filled: true,
+                fillColor: Colors.white,
+                prefixIcon: Icon(Icons.category, color: Colors.grey),
+              ),
             ),
+
             SizedBox(height: 10),
 
             // Image Picker
-            Text("Image"),
+            Center(
+              child: Text(
+                "Pick an image to change",
+                style: TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.w500,
+                    color: Colors.grey),
+              ),
+            ),
+            const SizedBox(height: 10),
             GestureDetector(
               onTap: _pickImage,
-              child: _selectedImage != null
-                  ? Image.file(_selectedImage!, height: 200, fit: BoxFit.cover)
-                  : widget.complaint['imageUrl'] != null
-                      ? Image.network(widget.complaint['imageUrl'],
-                          height: 200, fit: BoxFit.cover)
-                      : Container(
-                          height: 200,
-                          color: Colors.grey[300],
-                          child:
-                              Icon(Icons.image, size: 50, color: Colors.grey),
-                        ),
+              child: ClipRRect(
+                borderRadius: BorderRadius.circular(8), // Adds rounded corners
+                child: _selectedImage != null
+                    ? Image.file(
+                        _selectedImage!,
+                        height: 200,
+                        width: double.infinity,
+                        fit: BoxFit.cover,
+                      )
+                    : widget.complaint['imageUrl'] != null
+                        ? Image.network(
+                            widget.complaint['imageUrl'],
+                            height: 200,
+                            width: double.infinity,
+                            fit: BoxFit.cover,
+                            loadingBuilder: (context, child, loadingProgress) {
+                              if (loadingProgress == null) return child;
+                              return Center(child: CircularProgressIndicator());
+                            },
+                            errorBuilder: (context, error, stackTrace) =>
+                                _placeholder(),
+                          )
+                        : _placeholder(),
+              ),
             ),
             SizedBox(height: 10),
 
@@ -163,14 +260,38 @@ class EditComplaintScreenState extends State<EditComplaintScreen> {
             SizedBox(height: 10),
 
             // Update Button
-            ElevatedButton(
-              onPressed: _isUpdating ? null : _updateComplaint,
-              child: _isUpdating
-                  ? CircularProgressIndicator(color: Colors.white)
-                  : Text("Update Complaint"),
+            Center(
+              child: ElevatedButton(
+                onPressed: _isUpdating ? null : _updateComplaint,
+                style: ElevatedButton.styleFrom(
+                    backgroundColor: const Color(0xffB81736),
+                    shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(8))),
+                child: _isUpdating
+                    ? CircularProgressIndicator(color: Colors.white)
+                    : Text(
+                        "Update Complaint",
+                        style: TextStyle(color: Colors.white),
+                      ),
+              ),
             ),
           ],
         ),
+      ),
+    );
+  }
+
+  Widget _placeholder() {
+    return Container(
+      height: 200,
+      width: double.infinity,
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(8), // Matches image border
+        border: Border.all(color: Colors.grey[400]!),
+      ),
+      child: Center(
+        child: Icon(Icons.image, size: 50, color: Colors.grey[400]),
       ),
     );
   }
