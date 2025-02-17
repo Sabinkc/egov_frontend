@@ -1,12 +1,10 @@
-
-
-
+import 'package:egov_project/features/dashboard/presentation/screens/edit_complaint_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'package:egov_project/features/auth/presentation/screens/login_screen.dart';
-import 'package:shimmer/shimmer.dart'; // Import the shimmer package
+import 'package:shimmer/shimmer.dart'; // For shimmer effect
 
 class ViewComplainScreen extends StatefulWidget {
   const ViewComplainScreen({super.key});
@@ -44,7 +42,7 @@ class ViewComplainScreenState extends State<ViewComplainScreen> {
         headers: {
           'Authorization': 'Bearer $token',
         },
-      ).timeout(Duration(seconds: 10)); // Add timeout to prevent hanging
+      ).timeout(Duration(seconds: 10));
 
       if (response.statusCode == 200) {
         final Map<String, dynamic> data = jsonDecode(response.body);
@@ -190,6 +188,7 @@ class ViewComplainScreenState extends State<ViewComplainScreen> {
                       itemBuilder: (context, index) {
                         final complaint = _complaints[index];
                         return Card(
+                          color: Colors.white,
                           margin: EdgeInsets.only(bottom: 16),
                           elevation: 4,
                           shape: RoundedRectangleBorder(
@@ -201,7 +200,7 @@ class ViewComplainScreenState extends State<ViewComplainScreen> {
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
                                 Text(
-                                  complaint['subject'] ?? 'No Subject',
+                                  "${complaint['subject'] ?? 'No Subject'}",
                                   style: TextStyle(
                                     fontSize: 18,
                                     fontWeight: FontWeight.bold,
@@ -216,54 +215,103 @@ class ViewComplainScreenState extends State<ViewComplainScreen> {
                                   ),
                                 ),
                                 SizedBox(height: 8),
-                                if (complaint['image'] != null &&
-                                    complaint['image'].isNotEmpty)
-                                  ClipRRect(
-                                    borderRadius: BorderRadius.circular(8),
-                                    child: Image.network(
-                                      complaint['image'],
-                                      width: double.infinity,
-                                      height: 150,
-                                      fit: BoxFit.cover,
-                                      errorBuilder:
-                                          (context, error, stackTrace) {
-                                        return Container(
-                                          height: 150,
-                                          color: Colors.grey[200],
-                                          child: Center(
-                                            child: Icon(
-                                              Icons.broken_image,
-                                              color: Colors.grey[500],
-                                            ),
-                                          ),
-                                        );
-                                      },
-                                    ),
-                                  ),
-                                SizedBox(height: 8),
                                 Row(
                                   children: [
-                                    Chip(
-                                      label: Text(
-                                        complaint['category'] ??
-                                            'Uncategorized',
-                                        style: TextStyle(color: Colors.white),
-                                      ),
-                                      backgroundColor: Color(0xffB81736),
+                                    Text(
+                                      "Category: ",
+                                      style: TextStyle(
+                                          fontWeight: FontWeight.w600,
+                                          color: Colors.grey),
                                     ),
-                                    SizedBox(width: 8),
-                                    Chip(
-                                      label: Text(
-                                        complaint['status'] ?? 'Unknown',
-                                        style: TextStyle(color: Colors.white),
-                                      ),
-                                      backgroundColor:
-                                          complaint['status'] == 'resolved'
-                                              ? Colors.green
-                                              : Colors.orange,
+                                    Text(
+                                      "${complaint['category'] ?? 'Uncategorized'}",
+                                      style: TextStyle(color: Colors.blue),
                                     ),
                                   ],
                                 ),
+                                SizedBox(
+                                  height: 8,
+                                ),
+                                Row(
+                                  children: [
+                                    Text(
+                                      "Status: ",
+                                      style: TextStyle(
+                                          fontWeight: FontWeight.w600,
+                                          color: Colors.grey),
+                                    ),
+                                    Text(
+                                      "${complaint['status'] ?? 'Unknown'}",
+                                      style: TextStyle(color: Colors.red),
+                                    ),
+                                  ],
+                                ),
+                                SizedBox(height: 8),
+                                Row(
+                                  mainAxisAlignment:
+                                      MainAxisAlignment.spaceBetween,
+                                  children: [
+                                    if (complaint['image'] != null &&
+                                        complaint['image'].isNotEmpty)
+                                      ElevatedButton(
+                                        onPressed: () {
+                                          Navigator.push(
+                                            context,
+                                            MaterialPageRoute(
+                                              builder: (context) =>
+                                                  ImageViewScreen(
+                                                imageUrl: complaint['image'],
+                                              ),
+                                            ),
+                                          );
+                                        },
+                                        style: ElevatedButton.styleFrom(
+                                          shape: RoundedRectangleBorder(
+                                              borderRadius:
+                                                  BorderRadius.circular(8)),
+                                          side: BorderSide(color: Colors.grey),
+                                          backgroundColor: Colors.white,
+                                          padding: EdgeInsets.symmetric(
+                                              horizontal: 10, vertical: 0),
+                                        ),
+                                        child: Text(
+                                          'View Image',
+                                          style: TextStyle(color: Colors.grey),
+                                        ),
+                                      ),
+                                    ElevatedButton(
+                                      // onPressed: () {},
+                                      onPressed: () async {
+                                        final result = await Navigator.push(
+                                          context,
+                                          MaterialPageRoute(
+                                            builder: (context) =>
+                                                EditComplaintScreen(
+                                                    complaint: complaint),
+                                          ),
+                                        );
+
+                                        // If the user successfully updated the complaint, refresh the list
+                                        if (result == true) {
+                                          _fetchComplaints();
+                                        }
+                                      },
+                                      style: ElevatedButton.styleFrom(
+                                        shape: RoundedRectangleBorder(
+                                            borderRadius:
+                                                BorderRadius.circular(8)),
+                                        side: BorderSide(color: Colors.red),
+                                        backgroundColor: Colors.white,
+                                        padding: EdgeInsets.symmetric(
+                                            horizontal: 10, vertical: 0),
+                                      ),
+                                      child: Text(
+                                        'Edit Complaint',
+                                        style: TextStyle(color: Colors.red),
+                                      ),
+                                    ),
+                                  ],
+                                )
                               ],
                             ),
                           ),
@@ -302,16 +350,7 @@ class ViewComplainScreenState extends State<ViewComplainScreen> {
                       borderRadius: BorderRadius.circular(4),
                     ),
                   ),
-                  SizedBox(height: 8),
-                  // Shimmer for description (3 lines)
-                  Container(
-                    width: double.infinity,
-                    height: 14,
-                    decoration: BoxDecoration(
-                      color: Colors.white,
-                      borderRadius: BorderRadius.circular(4),
-                    ),
-                  ),
+
                   SizedBox(height: 6),
                   Container(
                     width: double.infinity,
@@ -322,15 +361,7 @@ class ViewComplainScreenState extends State<ViewComplainScreen> {
                     ),
                   ),
                   SizedBox(height: 6),
-                  Container(
-                    width: double.infinity,
-                    height: 14,
-                    decoration: BoxDecoration(
-                      color: Colors.white,
-                      borderRadius: BorderRadius.circular(4),
-                    ),
-                  ),
-                  SizedBox(height: 8),
+
                   // Shimmer for image placeholder
                   Container(
                     width: double.infinity,
@@ -340,35 +371,50 @@ class ViewComplainScreenState extends State<ViewComplainScreen> {
                       borderRadius: BorderRadius.circular(8),
                     ),
                   ),
-                  SizedBox(height: 8),
-                  // Shimmer for category and status chips
-                  Row(
-                    children: [
-                      Container(
-                        width: 80,
-                        height: 24,
-                        decoration: BoxDecoration(
-                          color: Colors.white,
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                      ),
-                      SizedBox(width: 8),
-                      Container(
-                        width: 80,
-                        height: 24,
-                        decoration: BoxDecoration(
-                          color: Colors.white,
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                      ),
-                    ],
-                  ),
                 ],
               ),
             ),
           ),
         );
       },
+    );
+  }
+}
+
+// New screen to view the image
+class ImageViewScreen extends StatelessWidget {
+  final String imageUrl;
+
+  const ImageViewScreen({super.key, required this.imageUrl});
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        leading: IconButton(
+            onPressed: () {
+              Navigator.pop(context);
+            },
+            icon: Icon(
+              Icons.arrow_back_ios,
+              color: Colors.white,
+            )),
+        backgroundColor: Color(0xffB81736),
+        title: Text(
+          'Complaint Image',
+          style: TextStyle(color: Colors.white),
+        ),
+        centerTitle: true,
+      ),
+      body: Center(
+        child: Image.network(
+          imageUrl,
+          fit: BoxFit.cover,
+          errorBuilder: (context, error, stackTrace) {
+            return Text('Failed to load image');
+          },
+        ),
+      ),
     );
   }
 }
